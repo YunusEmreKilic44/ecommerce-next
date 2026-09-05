@@ -156,17 +156,22 @@ const CartPage = () => {
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
+
+            <Button
+              fullWidth
+              className="mt-8"
+              onClick={() => router.push("/checkout")}
+            >
+              Proceed to Checkout
+            </Button>
+
+            <Link
+              href="/shop"
+              className="mt-5 block text-center text-sm font-medium text-primary hover:underline"
+            >
+              Continue Shopping
+            </Link>
           </div>
-
-          <Button
-            fullWidth
-            className="mt-8"
-            onClick={() => router.push("/checkout")}
-          >
-            Proceed to Checkout
-          </Button>
-
-          <Link href="/shop" className="mt-5 block text-center text-sm font-medium text-primary hover:underline">Continue Shopping</Link>
         </div>
       </section>
     </FrontendLayout>
