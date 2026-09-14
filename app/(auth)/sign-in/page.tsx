@@ -2,10 +2,15 @@
 import FrontendLayout from "@/components/layouts/FrontendLayout";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { authClient } from "@/lib/auth-client";
+import { signInWithGoogle } from "@/services/signInWithGoogle";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { router } from "better-auth/api";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
 import z from "zod";
 
@@ -17,6 +22,7 @@ export const signinSchema = z.object({
 type SignInFormValues = z.infer<typeof signinSchema>;
 
 const SignInPage = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -30,7 +36,17 @@ const SignInPage = () => {
   });
 
   const onSubmit = async (data: SignInFormValues) => {
-    console.log(data);
+    const { error } = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
+      toast.error(error.message as string);
+      return;
+    }
+    toast.success("Login successful");
+    router.replace("/account");
   };
 
   return (
@@ -68,6 +84,7 @@ const SignInPage = () => {
             </Button>
 
             <Button
+              onClick={signInWithGoogle}
               disabled={isSubmitting}
               leftIcon={<FcGoogle size={18} />}
               type="button"
