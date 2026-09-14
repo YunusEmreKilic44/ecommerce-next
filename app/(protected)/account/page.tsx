@@ -2,12 +2,22 @@ import FrontendLayout from "@/components/layouts/FrontendLayout";
 import BreadCrumb from "@/components/ui/BreadCrumb";
 import Button from "@/components/ui/Button";
 import { logout } from "@/server-actions/auth/logout";
+import { getProfile } from "@/server-actions/user/getProfile";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import React from "react";
 import { FaUser } from "react-icons/fa";
 import { FiLogOut, FiMapPin, FiPackage, FiUser } from "react-icons/fi";
 
-const AccountPage = () => {
+const AccountPage = async () => {
+  const userProfile = await getProfile();
+
+  if (!userProfile) {
+    redirect("/sign-in");
+  }
+
+  const address = userProfile.addresses[0];
+
   return (
     <FrontendLayout>
       <section className="mx-auto max-w-5xl py-12">
@@ -31,19 +41,26 @@ const AccountPage = () => {
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <p className="text-sm text-muted-foreground">Full Name</p>
-                <p className="font-medium">Jane Doe</p>
+                <p className="font-medium">{userProfile.name}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">jane@gmail.com</p>
+                <p className="font-medium">{userProfile.email}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">+23 812 35 6789</p>
+                <p className="font-medium">
+                  {userProfile.phone ?? "Not Provided"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="font-medium">Januray 2026</p>
+                <p className="font-medium">
+                  {userProfile.createdAt.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
               </div>
             </div>
 
@@ -58,25 +75,42 @@ const AccountPage = () => {
               </Link>
             </div>
             <div className="flex justify-center mt-4">
-              <Button onClick={logout} variant="outline" leftIcon={<FiLogOut />}>
+              <Button
+                onClick={logout}
+                variant="outline"
+                leftIcon={<FiLogOut />}
+              >
                 Logout
               </Button>
             </div>
           </div>
 
           {/* address */}
-          <div className="rounded-2xl border border-border p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <FiMapPin className="text-primary" size={22} />
-              <h2 className="text-xl font-semibold">Shipping Address</h2>
-            </div>
+          {address ? (
+            <div className="rounded-2xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <FiMapPin className="text-primary" size={22} />
+                <h2 className="text-xl font-semibold">Shipping Address</h2>
+              </div>
 
-            <div className="space-y-1">
-              <p>Lorem, ipsum dolor.</p>
-              <p>Lorem, ipsum dolor.</p>
-              <p>Lorem, ipsum dolor.</p>
+              <div className="space-y-1">
+                <p>
+                  {address.firstName} {address.lastName}
+                </p>
+                <p>{address.street}</p>
+                <p>
+                  {address.city}, {address.state}
+                </p>
+                <p>{address.country}</p>
+                {address.postalCode && <p>{address.postalCode}</p>}
+                <p>{address.phone}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <p className="text-muted-foreground">
+              No shipping address added yet.
+            </p>
+          )}
         </div>
       </section>
     </FrontendLayout>
