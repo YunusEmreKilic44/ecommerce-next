@@ -1,3 +1,4 @@
+import { logout } from "@/server-actions/auth/logout";
 import Link from "next/link";
 import React from "react";
 
@@ -101,7 +102,7 @@ const SidebarContent = ({ pathname, closeSidebar }: SidebarContentProps) => {
           View Shop
         </Link>
 
-        <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-destructive transition hover:bg-destructive/10">
+        <button onClick={logout} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-destructive transition hover:bg-destructive/10">
           <FiLogOut size={18} /> Logout
         </button>
       </div>
