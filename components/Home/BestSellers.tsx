@@ -4,6 +4,8 @@ import ProductCard from "../Products/ProductCard";
 import { getBestSellerProducts } from "@/server-actions/product/getBestSellerProducts";
 import ProductCardSkeleton from "../loading/skeletons/ProductCardSkeleton";
 
+export const dynamic = "force-dynamic";
+
 const BestSellers = () => {
   return (
     <section>
