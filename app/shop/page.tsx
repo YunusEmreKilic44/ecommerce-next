@@ -1,29 +1,32 @@
 import FrontendLayout from "@/components/layouts/FrontendLayout";
-import ProductCard from "@/components/Products/ProductCard";
 import FilterOptions from "@/components/Shop/FilterOptions";
-import { dummyShopProducts } from "@/constants/dummyProducts";
-import React from "react";
+import { Category, ProductType } from "../generated/prisma/enums";
+import { Suspense } from "react";
+import ShopProducts from "@/components/Shop/ShopProducts";
+import SortOptions from "@/components/Shop/SortOptions";
 
-const ShopPage = () => {
+interface ShopPageProps {
+  searchParams: Promise<{
+    category?: Category;
+    productType?: ProductType;
+    sort?: "low-high" | "high-low" | "newest" | "oldest";
+  }>;
+}
+
+const ShopPage = async ({ searchParams }: ShopPageProps) => {
+  const params = await searchParams;
+
   return (
     <FrontendLayout>
       <div className="flex flex-col sm:flex-row gap-5 my-10">
         <FilterOptions />
 
         <div className="flex-1">
-          <div className="flex justify-between items-center text-base sm:text-2xl mb-4">
-            <h2 className="text-primary font-semibold">Shop</h2>
-            <select className="border border-border text-sm p-3">
-              <option value="low-high">Sort By: Low to High</option>
-              <option value="high-low">Sort By: High to Low</option>
-            </select>
-          </div>
+          <SortOptions />
 
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {dummyShopProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <Suspense>
+            <ShopProducts searchParams={params} />
+          </Suspense>
         </div>
       </div>
     </FrontendLayout>
