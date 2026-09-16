@@ -1,9 +1,9 @@
+import DeleteProductButton from "@/components/admin/DeleteProductButton";
 import Button from "@/components/ui/Button";
 import { getProducts } from "@/server-actions/product/getProducts";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { FaTrashAlt } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 
 export const dynamic = "force-dynamic";
@@ -85,7 +85,7 @@ const ProductsPage = async () => {
                     </span>
                   </td>
                   <td className="px-6 py-5">
-                    <FaTrashAlt className="text-destructive" />
+                    <DeleteProductButton productId={product.id} />
                   </td>
                 </tr>
               ))}
