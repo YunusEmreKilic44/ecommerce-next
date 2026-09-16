@@ -2,15 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-interface DummyProduct {
-  id: number;
+interface ProductCardType {
+  id: string;
   name: string;
   image: string;
   price: number;
 }
 
 interface ProductCardProps {
-  product: DummyProduct;
+  product: ProductCardType;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
