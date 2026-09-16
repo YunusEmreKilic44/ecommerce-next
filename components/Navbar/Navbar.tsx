@@ -6,6 +6,7 @@ import { useState } from "react";
 import { FaRegUser } from "react-icons/fa";
 import { FiMenu, FiX } from "react-icons/fi";
 import { IoBagOutline, IoSearch } from "react-icons/io5";
+import CartCount from "./CartCount";
 
 const navLinks = [
   {
@@ -82,10 +83,11 @@ const Navbar = () => {
 
             {/* cart badge */}
             <button
-              className="rounded-full p-2 text-foreground transition-colors hover:bg-surface"
+              className="relative rounded-full p-2 text-foreground transition-colors hover:bg-surface"
               onClick={() => router.push("/cart")}
             >
               <IoBagOutline size={23} />
+              <CartCount />
             </button>
           </div>
 

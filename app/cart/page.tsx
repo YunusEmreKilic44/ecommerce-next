@@ -2,45 +2,75 @@
 import FrontendLayout from "@/components/layouts/FrontendLayout";
 import BreadCrumb from "@/components/ui/BreadCrumb";
 import Button from "@/components/ui/Button";
+import { useCartStore } from "@/store/cart-store";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
-
-const cartItems = [
-  {
-    id: 1,
-    name: "Classic Denim Jacket",
-    image: "/images/product1.png",
-    price: 79.99,
-    quantity: 1,
-    size: "M",
-    color: "Charcoal",
-  },
-  {
-    id: 2,
-    name: "Premium Hoodie",
-    image: "/images/product2.png",
-    price: 59.99,
-    quantity: 2,
-    size: "L",
-    color: "Brown",
-  },
-];
+import {
+  FiArrowLeft,
+  FiMinus,
+  FiPlus,
+  FiShoppingCart,
+  FiTrash2,
+} from "react-icons/fi";
 
 const CartPage = () => {
   const router = useRouter();
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
+  const {
+    subtotal,
+    totalItems,
+    cartItems,
+    removeFromCart,
+    increaseQuantity,
+    decreaseQuantity,
+  } = useCartStore();
 
   const shipping = 0;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const tax = subtotal() * 0.08;
+  const total = subtotal() + shipping + tax;
+
+  if (totalItems() === 0) {
+    return (
+      <FrontendLayout>
+        <section className="mx-auto max-w-6xl py-12">
+          <BreadCrumb
+            items={[
+              {
+                label: "Home",
+                href: "/",
+              },
+              {
+                label: "Cart",
+              },
+            ]}
+          />
+
+          <div className="mt-10 flex min-h-96 flex-col items-center justify-center rounded-2xl border border-border bg-background px-6 py-16 text-center">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-surface">
+              <FiShoppingCart size={44} className="text-muted-foreground" />
+            </div>
+
+            <h2 className="mt-6 text-2xl font-bold">Your cart is empty</h2>
+
+            <p className="mt-3 max-w-md text-muted-foreground">
+              Looks like you haven&apos;t added anything to your cart yet.
+              Browse our products and find something you love.
+            </p>
+
+            <Button
+              className="mt-8"
+              paddingX="px-8"
+              leftIcon={<FiArrowLeft />}
+              onClick={() => router.push("/shop")}
+            >
+              Continue Shopping
+            </Button>
+          </div>
+        </section>
+      </FrontendLayout>
+    );
+  }
 
   return (
     <FrontendLayout>
@@ -60,7 +90,7 @@ const CartPage = () => {
           />
 
           <p className="mt-2 text-muted-foreground">
-            {totalItems - 1} Item{totalItems !== 1 && "s"} in your cart
+            {totalItems()} Item{totalItems() !== 1 && "s"} in your cart
           </p>
         </div>
 
@@ -69,7 +99,7 @@ const CartPage = () => {
           <div className="space-y-6">
             {cartItems.map((item) => (
               <div
-                key={item.id}
+                key={item.cartKey}
                 className="flex flex-col gap-5 rounded-2xl border border-border p-5 transition hover:shadow-sm sm:flex-row"
               >
                 {/* product image */}
@@ -105,18 +135,27 @@ const CartPage = () => {
                   <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                     {/* quantity */}
                     <div className="flex items-center rounded-lg border border-border">
-                      <button className="p-3 transition hover:bg-surface">
+                      <button
+                        className="p-3 transition hover:bg-surface"
+                        onClick={() => decreaseQuantity(item.cartKey)}
+                      >
                         <FiMinus />
                       </button>
                       <span className="min-w-12 text-center font-semibold">
                         {item.quantity}
                       </span>
-                      <button className="p-3 transition hover:bg-surface">
+                      <button
+                        className="p-3 transition hover:bg-surface"
+                        onClick={() => increaseQuantity(item.cartKey)}
+                      >
                         <FiPlus />
                       </button>
                     </div>
 
-                    <button className="flex items-center gap-2 text-destructive transition hover:opacity-80">
+                    <button
+                      className="flex items-center gap-2 text-destructive transition hover:opacity-80"
+                      onClick={() => removeFromCart(item.cartKey)}
+                    >
                       <FiTrash2 />
                       <span className="text-sm font-medium">Remove</span>
                     </button>
@@ -133,12 +172,12 @@ const CartPage = () => {
             <div className="mt-8 space-y-4">
               <div className="flex justify-between">
                 <span>Items</span>
-                <span>{totalItems - 1}</span>
+                <span>{totalItems() - 1}</span>
               </div>
 
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>${subtotal().toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
