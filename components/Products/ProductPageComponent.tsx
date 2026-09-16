@@ -5,36 +5,25 @@ import React, { useState } from "react";
 import BreadCrumb from "../ui/BreadCrumb";
 import Button from "../ui/Button";
 import { IoBagAddOutline } from "react-icons/io5";
+import { getProduct } from "@/server-actions/product/getProduct";
 
-const images = [
-  "/images/gallery1.png",
-  "/images/gallery2.png",
-  "/images/gallery3.png",
-  "/images/gallery4.png",
-];
+interface ProductPageComponentProps {
+  product: Awaited<ReturnType<typeof getProduct>>;
+}
 
-const sizes = ["S", "M", "L", "XL"];
+const ProductPageComponent = ({ product }: ProductPageComponentProps) => {
+  const [selectedImage, setSelectedImage] = useState(
+    product?.images[0].imageUrl ?? "",
+  );
 
-const colors = [
-  {
-    name: "Charcoal",
-    value: "#1F2937",
-  },
-  {
-    name: "Brown",
-    value: "#8B5E3C",
-  },
-  {
-    name: "Light Gray",
-    value: "#E5E7EB",
-  },
-];
+  const [selectedSize, setSelectedSize] = useState(
+    product?.sizes[0].size ?? "",
+  );
+  const [selectedColor, setSelectedColor] = useState(
+    product?.colors[0] ?? null,
+  );
 
-const ProductPageComponent = () => {
-  const [selectedImage, setSelectedImage] = useState(images[0]);
-
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
+  const isOutOfStock = (product?.stock ?? 0) <= 0;
 
   return (
     <section className="py-12">
@@ -49,7 +38,7 @@ const ProductPageComponent = () => {
             href: "/shop",
           },
           {
-            label: "Product Name",
+            label: product?.name ?? "",
           },
         ]}
       />
@@ -58,14 +47,14 @@ const ProductPageComponent = () => {
         <div className="flex flex-col-reverse gap-4 md:flex-row">
           {/* galery images */}
           <div className="flex gap-3 overflow-x-auto md:flex-col md:overflow-visible">
-            {images.map((image) => (
+            {product?.images.map((image) => (
               <button
-                key={image}
-                className={`shrink-0 overflow-hidden rounded-xl border-2 transition ${selectedImage === image ? "border-primary" : "border-border"}`}
-                onClick={() => setSelectedImage(image)}
+                key={image.id}
+                className={`shrink-0 overflow-hidden rounded-xl border-2 transition ${selectedImage === image.imageUrl ? "border-primary" : "border-border"}`}
+                onClick={() => setSelectedImage(image.imageUrl)}
               >
                 <Image
-                  src={image}
+                  src={image.imageUrl}
                   alt="Product"
                   width={90}
                   height={110}
@@ -87,14 +76,21 @@ const ProductPageComponent = () => {
 
         {/* product details */}
         <div className="lg:sticky lg:top-24 lg:h-fit">
-          <h2 className="text-3xl font-bold sm:text-4xl">
-            Classic Demin Jacket
-          </h2>
-          <p className="mt-6 text-2xl font-bold sm:text-3xl">$79.99</p>
+          <h2 className="text-3xl font-bold sm:text-4xl">{product?.name}</h2>
+          <p className="mt-6 text-2xl font-bold sm:text-3xl">
+            ${product?.price.toFixed(2)}
+          </p>
+
+          <p
+            className={`mt-2 font-medium ${isOutOfStock ? "text-red-600" : "text-green-600"}`}
+          >
+            {isOutOfStock
+              ? "Out of Stock"
+              : `In Stock (${product?.stock} avaiable)`}
+          </p>
 
           <p className="mt-6 leading-8 text-muted-foreground">
-            Crafted from premium denim, this jacket offers a perfect fit and
-            timeless style.
+            {product?.description}
           </p>
 
           {/* sizes */}
@@ -102,13 +98,13 @@ const ProductPageComponent = () => {
             <p className="mb-3 font-semibold">Select Size</p>
 
             <div className="flex flex-wrap gap-3">
-              {sizes.map((size) => (
+              {product?.sizes.map((size) => (
                 <button
-                  key={size}
-                  className={`flex h-11 w-11 items-center justify-center rounded-lg border font-medium transition ${selectedSize === size ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary"}`}
-                  onClick={() => setSelectedSize(size)}
+                  key={size.size}
+                  className={`flex h-11 w-11 items-center justify-center rounded-lg border font-medium transition ${selectedSize === size.size ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary"}`}
+                  onClick={() => setSelectedSize(size.size)}
                 >
-                  {size}
+                  {size.size}
                 </button>
               ))}
             </div>
@@ -119,12 +115,12 @@ const ProductPageComponent = () => {
             <p className="mb-3 font-semibold">Select Colors</p>
 
             <div className="flex gap-3">
-              {colors.map((color) => (
+              {product?.colors.map((color) => (
                 <button
                   key={color.name}
                   title={color.name}
                   onClick={() => setSelectedColor(color)}
-                  className={`flex h-11 w-11 items-center justify-center rounded-full border transition ${selectedColor.name === color.name ? "border-primary ring-2 ring-primary ring-offset-2" : "border-border"}`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-full border transition ${selectedColor?.id === color.id ? "border-primary ring-2 ring-primary ring-offset-2" : "border-border"}`}
                 >
                   <span
                     className="h-8 w-8 rounded-full"
@@ -144,7 +140,7 @@ const ProductPageComponent = () => {
 
             <p className="text-sm mt-2">
               <span className="font-semibold">Selected Color:</span>{" "}
-              {selectedColor.name}
+              {selectedColor?.name}
             </p>
           </div>
 
