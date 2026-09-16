@@ -12,6 +12,15 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getProfile } from "@/server-actions/user/getProfile";
+import { useCartStore } from "@/store/cart-store";
+import { placeOrder } from "@/server-actions/order/placeOrder";
+import { PaymentMethod } from "@/app/generated/prisma/enums";
+import toast from "react-hot-toast";
+
+interface CheckoutPageComponentProps {
+  user: Awaited<ReturnType<typeof getProfile>>;
+}
 
 const checkoutSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters."),
@@ -21,33 +30,15 @@ const checkoutSchema = z.object({
   state: z.string().min(2, "State is required."),
   city: z.string().min(2, "City is required"),
   address: z.string().min(5, "Street address is required"),
+  country: z.string().min(2, "Country is required."),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-const orderItems = [
-  {
-    id: 1,
-    name: "Classic Denim Jacket",
-    image: "/images/product1.png",
-    quantity: 1,
-    price: 79.99,
-  },
-  {
-    id: 2,
-    name: "Premium Hoodie",
-    image: "/images/product2.png",
-    quantity: 2,
-    price: 59.99,
-  },
-];
+const CheckoutPageComponent = ({ user }: CheckoutPageComponentProps) => {
+  const { cartItems, clearCart, subtotal } = useCartStore();
+  const address = user?.addresses[0];
 
-const subtotal = 199.97;
-const shipping = 0;
-const tax = subtotal * 0.08;
-const total = subtotal + shipping + tax;
-
-const CheckoutPageComponent = () => {
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "stripe">("cod");
 
   const router = useRouter();
@@ -59,18 +50,54 @@ const CheckoutPageComponent = () => {
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      state: "",
-      city: "",
-      address: "",
+      firstName: address?.firstName ?? "",
+      lastName: address?.lastName ?? "",
+      email: user?.email ?? "",
+      phone: user?.phone ?? "",
+      state: address?.state ?? "",
+      city: address?.city ?? "",
+      address: address?.street ?? "",
+      country: address?.country ?? "",
     },
   });
 
+  const shipping = 0;
+  const tax = subtotal() * 0.05;
+  const total = subtotal() + shipping + tax;
+
   const onSubmit = async (data: CheckoutFormValues) => {
-    console.log({ ...data, paymentMethod });
+    // pay with cash on delivery
+    if (paymentMethod === "cod") {
+      const result = await placeOrder({
+        paymentMethod: PaymentMethod.CASH_ON_DELIVERY,
+        shippingAddress: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          street: data.address,
+          city: data.city,
+          state: data.state,
+          country: data.country,
+        },
+        cartItems: cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+        })),
+      });
+
+      if (!result.success) {
+        return toast.error(result.message as string);
+      }
+
+      toast.success("Order placed successfully.");
+      clearCart();
+      router.push(`/account/orders/${result.orderNumber}`);
+      return;
+    }
+
+    //continue to stripe
   };
 
   return (
@@ -135,6 +162,12 @@ const CheckoutPageComponent = () => {
                   error={errors.phone?.message}
                 />
                 <Input
+                  label="Country"
+                  placeholder="USA"
+                  {...register("country")}
+                  error={errors.country?.message}
+                />
+                <Input
                   label="State"
                   placeholder="California"
                   {...register("state")}
@@ -146,16 +179,15 @@ const CheckoutPageComponent = () => {
                   {...register("city")}
                   error={errors.city?.message}
                 />
-
-                <div>
-                  <Input
-                    label="Street Address"
-                    placeholder="No 11..."
-                    variant="textarea"
-                    {...register("address")}
-                    error={errors.address?.message}
-                  />
-                </div>
+              </div>
+              <div>
+                <Input
+                  label="Street Address"
+                  placeholder="No 11..."
+                  variant="textarea"
+                  {...register("address")}
+                  error={errors.address?.message}
+                />
               </div>
             </div>
 
@@ -221,8 +253,8 @@ const CheckoutPageComponent = () => {
             <h2 className="text-2xl font-bold">Order Summary</h2>
 
             <div className="mt-6 space-y-5">
-              {orderItems.map((item) => (
-                <div key={item.id} className="flex gap-4">
+              {cartItems.map((item) => (
+                <div key={item.cartKey} className="flex gap-4">
                   <Image
                     src={item.image}
                     alt={item.name}
@@ -250,7 +282,7 @@ const CheckoutPageComponent = () => {
             <div className="mt-8 space-y-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>${subtotal().toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
@@ -270,11 +302,16 @@ const CheckoutPageComponent = () => {
             </div>
 
             <Button
+              disabled={isSubmitting}
               fullWidth
               className="mt-8"
               onClick={() => router.push("/checkout")}
             >
-              {paymentMethod === "cod" ? "Place Order" : "Continue to Stripe"}
+              {isSubmitting
+                ? "Processing..."
+                : paymentMethod === "stripe"
+                  ? "Continue to Stripe"
+                  : "Place Order"}
             </Button>
 
             <Link
