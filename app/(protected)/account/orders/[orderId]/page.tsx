@@ -1,57 +1,30 @@
 import FrontendLayout from "@/components/layouts/FrontendLayout";
 import BreadCrumb from "@/components/ui/BreadCrumb";
 import Button from "@/components/ui/Button";
+import OrderStatusBadge from "@/components/ui/OrderStatusBadge";
+import { getOrder } from "@/server-actions/order/getOrder";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import React from "react";
 import { FaArrowLeft, FaMoneyBillWave } from "react-icons/fa";
 import { FiMapPin, FiPackage } from "react-icons/fi";
 
-const order = {
-  id: "ORD-8FK2P9",
-  createdAt: "July 27, 2026",
-  status: "PENDING",
-  paymentMethod: "Cash on Delivery",
-  paymentStatus: "Pending",
+interface OrderProps {
+  params: Promise<{
+    orderId: string;
+  }>;
+}
 
-  subtotal: 199.97,
-  shipping: 0,
-  tax: 10,
-  total: 209.97,
+const OrderDetailPage = async ({ params }: OrderProps) => {
+  const { orderId } = await params;
 
-  address: {
-    firstName: "John",
-    lastName: "Doe",
-    phone: "+234 801 234 5678",
-    street: "15 Admiralty Way",
-    city: "Lekki",
-    state: "Lagos",
-    country: "Nigeria",
-  },
+  const order = await getOrder(orderId);
 
-  items: [
-    {
-      id: "1",
-      name: "Classic Denim Jacket",
-      image: "/images/product1.png",
-      price: 79.99,
-      quantity: 1,
-      size: "M",
-      color: "Black",
-    },
-    {
-      id: "2",
-      name: "Premium Hoodie",
-      image: "/images/product2.png",
-      price: 59.99,
-      quantity: 2,
-      size: "L",
-      color: "Brown",
-    },
-  ],
-};
+  if (!order) {
+    notFound();
+  }
 
-const OrderDetailPage = () => {
   return (
     <FrontendLayout>
       <section className="mx-auto max-w-7xl py-12">
@@ -63,7 +36,7 @@ const OrderDetailPage = () => {
             },
             { label: "Account", href: "/account" },
             { label: "Orders", href: "/account/orders" },
-            { label: order.id },
+            { label: order.orderNumber },
           ]}
         />
 
@@ -80,16 +53,14 @@ const OrderDetailPage = () => {
               </Button>
             </Link>
 
-            <h2 className="text-3xl font-bold">{order.id}</h2>
+            <h2 className="text-3xl font-bold">{order.orderNumber}</h2>
 
             <p className="mt-2 text-muted-foreground">
-              Placed on {order.createdAt}
+              Placed on {order.createdAt.toLocaleDateString()}
             </p>
           </div>
 
-          <span className="rounded-full bg-yellow-100 px-4 py-2 text-sm font-semibold text-yellow-700">
-            Pending
-          </span>
+          <OrderStatusBadge status={order.status} />
         </div>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[2fr_1fr]">
