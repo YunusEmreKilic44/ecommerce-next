@@ -1,33 +1,33 @@
 import Button from "@/components/ui/Button";
+import { getAdminOrder } from "@/server-actions/order/getAdminOrder";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import React from "react";
 
-const products = [
-  {
-    id: 1,
-    name: "Classic Denim Jacket",
-    size: "L",
-    quantity: 2,
-    price: 79.99,
-    image: "/images/product1.png",
-  },
-  {
-    id: 2,
-    name: "Premium Hoodie",
-    size: "M",
-    quantity: 1,
-    price: 59.99,
-    image: "/images/product2.png",
-  },
-];
+interface OrderPageProps {
+  params: Promise<{ orderId: string }>;
+}
 
-const OrderPage = async ({}) => {
+const OrderPage = async ({ params }: OrderPageProps) => {
+  const { orderId } = await params;
+
+  const order = await getAdminOrder(Number(orderId));
+
+  if (!order) {
+    notFound();
+  }
+
   return (
     <section>
       {/* header */}
       <div>
-        <h2 className="text-3xl font-semibold">Order #5151</h2>
-        <p className="mt-2 text-muted-foreground">Placed on July 17, 2026</p>
+        <h2 className="text-3xl font-semibold">Order #{order.orderNumber}</h2>
+        <p className="mt-2 text-muted-foreground">
+          Placed on{" "}
+          {new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(
+            order.createdAt,
+          )}
+        </p>
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]">
@@ -40,22 +40,25 @@ const OrderPage = async ({}) => {
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               <div>
                 <p className="text-sm text-muted-foreground">Name</p>
-                <p className="mt-1 font-medium">Jane Doe</p>
+                <p className="mt-1 font-medium">{order.customer.name}</p>
               </div>
 
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="mt-1 font-medium">Jane@gmail.com</p>
+                <p className="mt-1 font-medium">{order.customer.email}</p>
               </div>
 
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="mt-1 font-medium">+1515151515</p>
+                <p className="mt-1 font-medium">+{order.customer.phone}</p>
               </div>
 
               <div>
                 <p className="text-sm text-muted-foreground">Address</p>
-                <p className="mt-1 font-medium">New York, USA</p>
+                <p className="mt-1 font-medium">
+                  {order.address.city}, {order.address.state} <br />{" "}
+                  {order.address.country}
+                </p>
               </div>
             </div>
           </div>
@@ -67,7 +70,7 @@ const OrderPage = async ({}) => {
             </div>
 
             <div className="divide-y divide-border">
-              {products.map((product) => (
+              {order.items.map((product) => (
                 <div key={product.id} className="flex items-center gap-5 p-6">
                   <Image
                     src={product.image}
@@ -127,25 +130,25 @@ const OrderPage = async ({}) => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
 
-                <span>$555</span>
+                <span>${order.subtotal}</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
 
-                <span>$555</span>
+                <span>${order.shipping}</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tax</span>
 
-                <span>$555</span>
+                <span>${order.tax}</span>
               </div>
 
               <div className="border-t border-border pt-4 flex justify-between text-lg font-semibold">
                 <span>Total</span>
 
-                <span>$555</span>
+                <span>${order.total}</span>
               </div>
             </div>
           </div>
@@ -156,12 +159,12 @@ const OrderPage = async ({}) => {
 
             <div className="mt-5 flex items-center justify-between">
               <span className="text-muted-foreground">Method</span>
-              <span>Stripe</span>
+              <span>{order.paymentMethod}</span>
             </div>
 
             <div className="mt-5 flex items-center justify-between">
               <span className="text-muted-foreground">Status</span>
-              <span>Paid</span>
+              <span>{order.paymentStatus}</span>
             </div>
           </div>
         </div>
