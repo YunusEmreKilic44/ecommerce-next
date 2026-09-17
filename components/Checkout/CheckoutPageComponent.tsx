@@ -17,6 +17,7 @@ import { useCartStore } from "@/store/cart-store";
 import { placeOrder } from "@/server-actions/order/placeOrder";
 import { PaymentMethod } from "@/app/generated/prisma/enums";
 import toast from "react-hot-toast";
+import { createStripeCheckoutSession } from "@/server-actions/order/createStripeCheckoutSession";
 
 interface CheckoutPageComponentProps {
   user: Awaited<ReturnType<typeof getProfile>>;
@@ -98,6 +99,33 @@ const CheckoutPageComponent = ({ user }: CheckoutPageComponentProps) => {
     }
 
     //continue to stripe
+    const result = await createStripeCheckoutSession({
+      shippingAddress: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        street: data.address,
+        city: data.city,
+        state: data.state,
+        country: data.country,
+      },
+      cartItems: cartItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+      })),
+    });
+
+    if (!result.success) {
+      return toast.error(result.message as string);
+    }
+
+    if (!result.url) {
+      return toast.error("Unable to start Stripe checkout.");
+    }
+
+    router.push(result.url);
   };
 
   return (
