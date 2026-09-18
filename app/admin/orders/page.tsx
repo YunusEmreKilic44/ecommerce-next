@@ -4,6 +4,8 @@ import Link from "next/link";
 import React from "react";
 import { FiEye } from "react-icons/fi";
 
+export const dynamic = "force-dynamic";
+
 const OrdersPage = async () => {
   const orders = await getAllOrders();
 
@@ -84,9 +86,7 @@ const OrdersPage = async () => {
                     {order.createdAt.toLocaleDateString()}
                   </td>
                   <td className="px-6 py-5">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                    >
+                    <Link href={`/admin/orders/${order.id}`}>
                       <button className="rounded-lg p-4 transition hover:bg-surface">
                         <FiEye />
                       </button>

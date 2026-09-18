@@ -7,6 +7,8 @@ import Link from "next/link";
 import React from "react";
 import { FiEye } from "react-icons/fi";
 
+export const dynamic = "force-dynamic";
+
 const OrdersPage = async () => {
   const orders = await getOrders();
 

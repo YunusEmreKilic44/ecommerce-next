@@ -4,6 +4,8 @@ import EditProfileForm from "@/components/user/EditProfileForm";
 import { getProfile } from "@/server-actions/user/getProfile";
 import React from "react";
 
+export const dynamic = "force-dynamic";
+
 const EditProfilePage = async () => {
   const userProfile = await getProfile();
 
