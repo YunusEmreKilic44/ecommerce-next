@@ -1,3 +1,4 @@
+import OrderStatusCard from "@/components/Order/OrderStatusCard";
 import Button from "@/components/ui/Button";
 import { getAdminOrder } from "@/server-actions/order/getAdminOrder";
 import Image from "next/image";
@@ -104,23 +105,7 @@ const OrderPage = async ({ params }: OrderPageProps) => {
         {/* right side */}
         <div className="space-y-8">
           {/* status */}
-          <div className="rounded-2xl border border-border bg-background p-6">
-            <h2 className="text-lg font-semibold">Customer Order Status</h2>
-
-            <div className="mt-6">
-              <label className="mb-2 block text-sm font-medium">Status</label>
-
-              <select className="h-12 w-full rounded-lg border border-border bg-background px-4 outline-none focus:border-primary">
-                <option>Pending</option>
-                <option>Processing</option>
-                <option>Shipped</option>
-                <option>Delivered</option>
-                <option>Cancelled</option>
-              </select>
-            </div>
-
-            <Button className="mt-6 w-full">Update Order</Button>
-          </div>
+          <OrderStatusCard status={order.status} orderId={order.id} />
 
           {/* summary */}
           <div className="rounded-2xl border border-border bg-background p-6">
