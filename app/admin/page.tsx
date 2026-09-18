@@ -1,25 +1,28 @@
+import { getDashboardStats } from "@/server-actions/admin/getDashboardStats";
 import React from "react";
 import { FiUsers, FiPackage, FiShoppingBag } from "react-icons/fi";
 
-const stats = [
-  {
-    title: "Total Users",
-    value: "1,245",
-    icon: FiUsers,
-  },
-  {
-    title: "Total Products",
-    value: "156",
-    icon: FiPackage,
-  },
-  {
-    title: "Total Orders",
-    value: "428",
-    icon: FiShoppingBag,
-  },
-];
+const DashboardPage = async () => {
+  const { totalUsers, totalOrders, totalProducts } = await getDashboardStats();
 
-const DashboardPage = () => {
+  const stats = [
+    {
+      title: "Total Users",
+      value: totalUsers,
+      icon: FiUsers,
+    },
+    {
+      title: "Total Products",
+      value: totalProducts,
+      icon: FiPackage,
+    },
+    {
+      title: "Total Orders",
+      value: totalOrders,
+      icon: FiShoppingBag,
+    },
+  ];
+
   return (
     <section>
       <div>
