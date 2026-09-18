@@ -3,6 +3,7 @@
 import { Category, ProductType, Size } from "@/app/generated/prisma/enums";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -184,7 +185,8 @@ const AddProductPage = () => {
             <div key={index}>
               {images[index] ? (
                 <div className="relative aspect-square overflow-hidden rounded-xl border border-border">
-                  <img
+                  <Image
+                    fill
                     src={URL.createObjectURL(images[index])}
                     alt="Selected image"
                     className="w-full h-full object-cover"

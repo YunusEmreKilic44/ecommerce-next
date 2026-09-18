@@ -1,5 +1,4 @@
 import OrderStatusCard from "@/components/Order/OrderStatusCard";
-import Button from "@/components/ui/Button";
 import { getAdminOrder } from "@/server-actions/order/getAdminOrder";
 import Image from "next/image";
 import { notFound } from "next/navigation";

@@ -31,6 +31,7 @@ const DeleteProductButton = ({ productId }: DeleteProductButtonProps) => {
       toast.success(result.message);
       router.refresh();
     } catch (error) {
+      console.error(error);
       toast.error("Something went wrong");
     } finally {
       setIsDeleting(false);
